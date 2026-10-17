@@ -65,9 +65,11 @@ button.alt{border-color:var(--line);background:transparent;color:var(--mute);fon
 </div>
 <script>
 (function () {
-  var PORT = 8443, N = 32, WAIT = 4500;   // ★ B1130) KT 는 /27 이라 .16~.31 도 있다
+  var PORT = 8443, N = 32, WAIT = 8000;   // ★ B1135) 첫 방문은 이름 32개를 캐시 없이 풀어 4.5초가 빠듯했다 — 못 찾을 때만 기다린다   // ★ B1130) KT 는 /27 이라 .16~.31 도 있다
   function host(n) { return n === 2 ? "car.geurumedi.co.kr" : n === 8 ? "car1.geurumedi.co.kr" : "c" + n + ".geurumedi.dedyn.io"; }
-  function probeHost(n) { return "c" + n + ".geurumedi.dedyn.io"; }
+  /* ★ B1135) .2·.8 은 옛 이름(car·car1)으로 두드린다 — 그 이름은 옛 인증서(192 판)에도 들어 있어 와일드카드 없이도 찾는다.
+       옛 판은 늘 cN 으로 두드려 와일드카드가 없는 폰(192 전부)은 TLS 에서 막혀 아무도 못 찾았다(10-18 검토 두 곳). */
+  function probeHost(n) { return host(n); }
   /* ★ B1133) 접속 코드(?k=)를 켠 폰 — 즐겨찾기 주소에 붙은 코드를 그대로 넘긴다 */
   var K = ((location.search || "").match(/[?&]k=([^&#]+)/) || [])[1] || "";
   function go(n, why) {
