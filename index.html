@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>띰미러 연결</title>
 <!-- 띰미러 입구 페이지(B1125 · 2026-10-17) — 차 브라우저는 이 주소 하나만 즐겨찾기에 둔다.
-     폰이 받은 192.0.0.x 는 폰·통신사마다 달라 이름 하나로는 못 찾는다 → 주소별 이름 c0~c15 를 동시에 두드려 대답한 곳으로 넘어간다.
+     폰이 받은 192.0.0.x 는 폰·통신사마다 달라 이름 하나로는 못 찾는다 → 주소별 이름 c0~c31 을 동시에 두드려 대답한 곳으로 넘어간다.
      .2 = car.geurumedi.co.kr · .8 = car1.geurumedi.co.kr(옛 즐겨찾기와 같은 곳) · 그 밖 = cN.geurumedi.dedyn.io -->
 <style>
 :root{--bg:#07090f;--card:#121722;--line:#262d3d;--gold:#CEA958;--cream:#F2E4C0;--tx:#e8ecf3;--mute:#94a0b4;--ok:#5fd08e;--warn:#f0b44c}
@@ -50,7 +50,7 @@ button.alt{border-color:var(--line);background:transparent;color:var(--mute);fon
 </div>
 <script>
 (function () {
-  var PORT = 8443, N = 16, WAIT = 4500;
+  var PORT = 8443, N = 32, WAIT = 4500;   // ★ B1130) KT 는 /27 이라 .16~.31 도 있다
   function host(n) { return n === 2 ? "car.geurumedi.co.kr" : n === 8 ? "car1.geurumedi.co.kr" : "c" + n + ".geurumedi.dedyn.io"; }
   function probeHost(n) { return "c" + n + ".geurumedi.dedyn.io"; }
   function go(n, why) {
