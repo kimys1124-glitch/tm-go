@@ -1,0 +1,15 @@
+{
+  "v": 1,
+  "notices": [
+    { "id": 9001, "level": "urgent", "from": "2026-10-01", "to": "2026-12-31", "minVer": 0, "maxVer": 0,
+      "title": "[시험] 핫스팟 연결이 안 되면 껐다 켜 주세요",
+      "body": "시험 공지입니다. 1.96 판에서 일부 폰이 차를 다른 기기로 잘못 보고 연결을 멈춥니다.\n핫스팟을 한 번 껐다 켜면 붙습니다.", "btn": null },
+    { "id": 9002, "level": "normal", "from": "2026-10-01", "to": "2026-12-31", "minVer": 0, "maxVer": 0,
+      "title": "[시험] 1.97 판이 나왔어요",
+      "body": "시험 공지입니다. 플레이 스토어에서 업데이트해 주세요.", "btn": { "label": "업데이트", "url": "play" } },
+    { "id": 9003, "level": "normal", "from": "2026-01-01", "to": "2026-01-31", "minVer": 0, "maxVer": 0,
+      "title": "[시험] 기간 지남 — 안 보여야 함", "body": "x", "btn": null },
+    { "id": 9004, "level": "urgent", "from": "", "to": "", "minVer": 999, "maxVer": 0,
+      "title": "[시험] 대상 판 아님 — 안 보여야 함", "body": "x", "btn": { "label": "나쁜 링크", "url": "javascript:alert(1)" } }
+  ]
+}
