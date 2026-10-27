@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>아톰 시험</title>
+<style>
+:root{
+  --bg:#0a0c0f; --card:#161a21; --card2:#1d222b; --line:#2c3440;
+  --fg:#f4f6f9; --dim:#a3adbb; --ok:#4ade80; --bad:#ff7a7a; --warn:#fcd34d; --acc:#7cb8ff;
+  --btnA:#3b4a63; --btnB:#15803d; --btnC:#6d28d9; --btnS:#b91c1c;
+}
+*{box-sizing:border-box}
+html{font-size:28px;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:system-ui,-apple-system,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  line-height:1.3;padding:12px 18px 60px;overflow-x:hidden}
+h2{font-size:1rem;margin:0 0 .4rem;color:var(--acc)}
+button{font:inherit;color:#fff;border:0;border-radius:16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:active{filter:brightness(1.3)}
+.ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)} .acc{color:var(--acc)}
+
+/* guided card */
+.guide{background:#101b2a;border:3px solid #2f5f92;border-radius:18px;padding:14px 20px 18px}
+.ghead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.gstep{font-size:1.15rem;font-weight:900}
+.gstep .num{font-size:2.1rem;color:var(--warn);font-variant-numeric:tabular-nums;margin-left:6px}
+.gright{display:flex;align-items:center;gap:14px}
+.clock{font-size:1rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--dim)}
+.reset{background:#3a3f48;font-size:.75rem;font-weight:800;padding:12px 18px}
+.gtext{font-size:1.45rem;font-weight:900;line-height:1.3;margin:10px 0 6px;word-break:keep-all}
+.gtext ol{margin:4px 0;padding-left:1.4em} .gtext li{margin:4px 0}
+.gnote{font-size:.85rem;color:var(--dim);margin:4px 0 8px;word-break:keep-all}
+.gres{font-size:1.5rem;font-weight:900;padding:12px 16px;border-radius:14px;margin:8px 0;word-break:keep-all;line-height:1.25}
+.gres.re{background:#5b1414;color:#ffe1e1} .gres.st{background:#123a22;color:#d6ffe4}
+.gres .s{display:block;font-size:.95rem;font-weight:700;margin-top:6px;opacity:.95}
+.photo{font-size:1.3rem;font-weight:900;color:var(--warn);margin:8px 0}
+.gbtns{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px}
+.gb{font-size:1.5rem;font-weight:900;padding:24px 34px;min-height:110px;flex:1 1 300px}
+.gb.small{font-size:.95rem;min-height:80px;flex:0 1 260px;background:#3a3f48}
+.gb.A{background:var(--btnA)} .gb.B{background:var(--btnB)} .gb.C{background:var(--btnC)} .gb.go{background:#1d4ed8} .gb.done{background:#b45309}
+.gb.yes{background:#15803d} .gb.no{background:#b91c1c}
+.gb.picked{outline:6px solid #fff;outline-offset:-6px}
+.btq{font-size:1.25rem;font-weight:900;margin-top:14px}
+.msg{margin-top:10px;font-size:1rem;font-weight:800;padding:10px 14px;border-radius:12px;background:var(--card2)}
+.msg:empty{display:none}
+.msg.bad{background:#5b1414;color:#ffe1e1} .msg.ok{background:#123a22;color:#d6ffe4}
+.sum{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:8px}
+.sum th,.sum td{border:2px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+.sum th{color:var(--dim);background:#0d141f}
+.sum td:first-child{font-weight:900;white-space:nowrap}
+.caps{font-size:22px;font-weight:700;line-height:1.4;margin-top:10px;padding:8px 12px;border:2px solid var(--line);border-radius:10px;background:#0d141f;word-break:keep-all;overflow-wrap:anywhere}
+
+/* status strip */
+.top{display:grid;grid-template-columns:1fr 1.6fr 1.1fr;gap:12px;margin-top:12px}
+.card{background:var(--card);border:2px solid var(--line);border-radius:14px;padding:10px 16px;min-width:0}
+.lab{font-size:.72rem;color:var(--dim);font-weight:700}
+.big{font-size:1.35rem;font-weight:900;line-height:1.2;font-variant-numeric:tabular-nums;word-break:keep-all}
+.sub{font-size:.66rem;color:var(--dim);margin-top:4px;word-break:keep-all}
+.pill{display:inline-block;padding:1px 10px;border-radius:999px;font-weight:900;font-size:.85em}
+.pill.ok{background:#14532d;color:#bbf7d0} .pill.bad{background:#7f1d1d;color:#fecaca}
+
+/* details */
+details{margin-top:14px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 14px}
+summary{font-size:1rem;font-weight:900;padding:10px 0;cursor:pointer;color:var(--acc)}
+.btns{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:6px 0 10px}
+.tb{font-size:.9rem;font-weight:900;padding:14px 6px;min-height:80px}
+.tA{background:var(--btnA)} .tB{background:var(--btnB)} .tC{background:var(--btnC)} .tS{background:var(--btnS)}
+.tb.on{outline:5px solid #fff;outline-offset:-5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0}
+.grid2 .card{background:var(--card2)}
+table.t{width:100%;border-collapse:collapse;font-size:.66rem}
+table.t td,table.t th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;word-break:break-word}
+table.t th{color:var(--dim);font-weight:700}
+td.k{color:var(--dim);width:42%}
+td.v{font-weight:700;font-variant-numeric:tabular-nums}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;width:18%}
+.log{font-size:.6rem;font-family:ui-monospace,Consolas,monospace;line-height:1.35}
+.log div{padding:2px 0;border-bottom:1px dashed #252b35}
+.log .t{color:var(--dim);margin-right:8px}
+.clearbtn{background:#3a3f48;font-size:.75rem;font-weight:700;padding:12px 20px;margin:4px 0 10px}
+
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.ovl.show{display:flex}
+.dlg{background:var(--card);border:2px solid var(--line);border-radius:16px;padding:22px;max-width:680px;width:100%}
+.dlg p{margin:0 0 16px;font-size:1.1rem;font-weight:900}
+.dlg .row{display:flex;gap:12px}
+.dlg button{flex:1;padding:20px;font-size:1.1rem;font-weight:900}
+
+@media (max-width:1000px){
+  html{font-size:22px}
+  .top{grid-template-columns:1fr 1fr}
+  .top .card:nth-child(2){grid-column:1 / -1;order:-1}
+}
+@media (max-width:700px){
+  html{font-size:17px}
+  body{padding:10px 16px 50px}
+  .top{grid-template-columns:1fr}
+  .btns{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  .gb{flex:1 1 100%;padding:18px 16px;min-height:90px}
+  .sum{font-size:.78rem}
+  .caps{font-size:15px}
+  .sum th,.sum td{padding:5px 6px}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== guided step card ===== -->
+<div class="guide" id="guide">
+  <div class="ghead">
+    <div class="gstep" id="gStep">지금 할 일</div>
+    <div class="gright">
+      <span class="clock" id="clock">--:--:--</span>
+      <button class="reset" id="gReset">처음부터 다시</button>
+    </div>
+  </div>
+  <div id="gBody"></div>
+  <div class="msg" id="msg"></div>
+</div>
+
+<!-- ===== status strip ===== -->
+<div class="top">
+  <div class="card">
+    <div class="lab">새로 열린 횟수</div>
+    <div class="big" id="kLoads">-</div>
+    <div class="sub" id="kLoadsSub"></div>
+  </div>
+  <div class="card">
+    <div class="lab">지난번 끝 → 이번 시작</div>
+    <div class="big" id="kGap">-</div>
+    <div class="sub" id="kGapSub"></div>
+  </div>
+  <div class="card">
+    <div class="lab">지금 소리</div>
+    <div class="big" id="kSound">-</div>
+    <div class="sub" id="kSoundSub"></div>
+  </div>
+</div>
+
+<!-- ===== details (collapsed) ===== -->
+<details id="det">
+  <summary>자세히 보기</summary>
+  <div class="lab" style="margin-top:4px">직접 시험 (단계와 따로)</div>
+  <div class="btns">
+    <button class="tb tA" id="bA">A 소리 없이</button>
+    <button class="tb tB" id="bB">B 소리 켜고</button>
+    <button class="tb tC" id="bC">C 거의 무음</button>
+    <button class="tb tS" id="bS">멈춤</button>
+  </div>
+  <div class="grid2">
+    <div class="card"><h2>이번에 열린 모습</h2><table class="t" id="tLoad"></table></div>
+    <div class="card">
+      <h2>소리 상태 (실시간)</h2><table class="t" id="tAudio"></table>
+      <h2 style="margin-top:12px">횟수</h2><table class="t" id="tCount"></table>
+    </div>
+    <div class="card"><h2>사건 기록 (최근 20 · 새것이 위)</h2><div class="log" id="log"></div></div>
+    <div class="card"><h2>브라우저 기능</h2><table class="t" id="tCap"></table></div>
+  </div>
+  <button class="clearbtn" id="bClear">기록 모두 지우기</button>
+</details>
+
+<div class="ovl" id="ovl">
+  <div class="dlg">
+    <p id="ovlText">정말 할까요?</p>
+    <div class="row">
+      <button style="background:#b91c1c" id="bYes">예</button>
+      <button style="background:#3a3f48" id="bNo">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ---------- storage helpers (all wrapped) ---------- */
+  var P = 'atomtest_';
+  function lsGet(k) { try { return window.localStorage.getItem(P + k); } catch (e) { return null; } }
+  function lsSet(k, v) { try { window.localStorage.setItem(P + k, v); return true; } catch (e) { return false; } }
+  function lsDel(k) { try { window.localStorage.removeItem(P + k); } catch (e) {} }
+  function lsJSON(k, def) { var s = lsGet(k); if (s == null) return def; try { var o = JSON.parse(s); return o == null ? def : o; } catch (e) { return def; } }
+  function ssGet(k) { try { return window.sessionStorage.getItem(P + k); } catch (e) { return null; } }
+  function ssSet(k, v) { try { window.sessionStorage.setItem(P + k, v); } catch (e) {} }
+  var lsOK = lsSet('probe', '1'); lsDel('probe');
+
+  /* ---------- small utils ---------- */
+  function $(id) { return document.getElementById(id); }
+  function p2(n) { return (n < 10 ? '0' : '') + n; }
+  function hms(t) { var d = new Date(t); return p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds()); }
+  function mdhms(t) { var d = new Date(t); return p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + ' ' + hms(t); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function secs(ms) { var s = ms / 1000; return s < 100 ? s.toFixed(1) : String(Math.round(s)); }
+  function rows(list) {
+    return list.map(function (r) { return '<tr><td class="k">' + esc(r[0]) + '</td><td class="v">' + r[1] + '</td></tr>'; }).join('');
+  }
+  var TEST_NAME = { A: 'A 소리 없이', B: 'B 소리 켜고', C: 'C 거의 무음' };
+
+  /* ---------- read what the previous page left, then start this load ---------- */
+  var T0 = Date.now();
+  var prevHb = lsJSON('hb', null);      // last heartbeat of previous page
+  var prevEnd = lsJSON('end', null);    // written in pagehide
+  var prevBu = lsJSON('bu', null);      // written in beforeunload
+  var prevTest = lsJSON('test', null);  // last test started (any earlier load)
+  var loads = (parseInt(lsGet('loads'), 10) || 0) + 1;
+  lsSet('loads', String(loads));
+  lsSet('loadT', String(T0));
+  lsDel('end'); lsDel('bu');
+
+  var ssMark = ssGet('mark');
+  var sameSession = !!ssMark;
+  var ssLoads = (parseInt(ssGet('n'), 10) || 0) + 1;
+  if (!ssMark) { ssMark = String(T0); ssSet('mark', ssMark); }
+  ssSet('n', String(ssLoads));
+
+  var ZERO = function () { return { hidden: 0, freeze: 0, resume: 0, pspersist: 0, pagehide: 0 }; };
+  var cum = lsJSON('cum', ZERO());
+  var cur = ZERO();
+  var log = lsJSON('log', []); if (!Array.isArray(log)) log = [];
+
+  var navType = '(없음)';
+  try { var ne = performance.getEntriesByType('navigation')[0]; if (ne && ne.type) navType = ne.type; } catch (e) {}
+  var wasDiscarded = (typeof document.wasDiscarded === 'undefined') ? '(지원 안 함)' : String(document.wasDiscarded);
+  var referrer = document.referrer || '(비어 있음)';
+  var cleared = false;
+
+  /* ---------- guide state ---------- */
+  // phase: ready → running → back ; step 5 = finished
+  function newGuide() { return { step: 1, phase: 'ready', res: {} }; }
+  var G = lsJSON('guide', null);
+  if (!G || typeof G.step !== 'number' || !G.res) G = newGuide();
+  function saveG() { lsSet('guide', JSON.stringify(G)); }
+  var STEP_TEST = { 1: 'A', 2: 'B', 3: 'B', 4: 'C' };
+
+  // Came back after the browser was reopened during a running step?
+  if ((G.phase === 'running' || G.phase === 'back') && G.startLoads != null && loads > G.startLoads) {
+    if (G.phase === 'running') {
+      G.res[G.step] = {
+        reopen: true, n: loads - G.startLoads, loadNo: loads,
+        sess: ssMark === G.startMark ? 'same' : 'new',
+        ph: !!prevEnd,
+        test: G.test,
+        playing: prevHb ? !!prevHb.playing : null,
+        gap: prevHb ? T0 - prevHb.t : null,
+        hid: G.hid || 0, pauses: G.pauses || 0, t: T0
+      };
+      G.phase = 'back';
+    } else if (G.res[G.step] && G.res[G.step].reopen) {
+      G.res[G.step].n = loads - G.startLoads;
+      G.res[G.step].loadNo = loads;
+    }
+    saveG();
+  }
+
+  /* ---------- audio ---------- */
+  var audio = document.createElement('audio');
+  audio.loop = true;
+  audio.preload = 'auto';
+  audio.setAttribute('playsinline', '');
+  document.body.appendChild(audio);
+  var wavUrl = {};
+  var curTest = null, curTestT = 0, curKind = null, selfPauseT = 0;
+
+  function makeWav(kind) {
+    var rate = 22050, sec = 40, n = rate * sec;
+    var buf = new Float32Array(n), i;
+    if (kind === 'B') {
+      // gentle pentatonic chimes every 0.6 s; tails wrap so the loop is seamless
+      var notes = [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5, 783.99, 659.25];
+      var seed = 7, step = Math.round(rate * 0.6), tau = rate * 0.45, len = Math.round(rate * 2.2);
+      for (var s = 0, k = 0; s < n; s += step, k++) {
+        seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+        var f = notes[(k % 4 === 0) ? 0 : (seed >> 8) % notes.length];
+        var amp = (k % 4 === 0) ? 0.26 : 0.18;
+        var w = 2 * Math.PI * f / rate;
+        for (i = 0; i < len; i++) {
+          var env = (i < 110 ? i / 110 : 1) * Math.exp(-i / tau);
+          buf[(s + i) % n] += amp * env * (Math.sin(w * i) + 0.25 * Math.sin(2 * w * i) + 0.08 * Math.sin(3 * w * i));
+        }
+      }
+    } else {
+      // near-silent: 30 Hz at about -50 dBFS + tiny noise (1200 whole cycles in 40 s = seamless)
+      var a = Math.pow(10, -50 / 20), w30 = 2 * Math.PI * 30 / rate, r = 12345;
+      for (i = 0; i < n; i++) {
+        r = (r * 1103515245 + 12345) & 0x7fffffff;
+        buf[i] = a * Math.sin(w30 * i) + a * 0.12 * ((r / 0x7fffffff) * 2 - 1);
+      }
+    }
+    var ab = new ArrayBuffer(44 + n * 2), dv = new DataView(ab);
+    function str(o, t) { for (var j = 0; j < t.length; j++) dv.setUint8(o + j, t.charCodeAt(j)); }
+    str(0, 'RIFF'); dv.setUint32(4, 36 + n * 2, true); str(8, 'WAVE');
+    str(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true); dv.setUint16(22, 1, true);
+    dv.setUint32(24, rate, true); dv.setUint32(28, rate * 2, true); dv.setUint16(32, 2, true); dv.setUint16(34, 16, true);
+    str(36, 'data'); dv.setUint32(40, n * 2, true);
+    for (i = 0; i < n; i++) {
+      var x = buf[i]; if (x > 1) x = 1; else if (x < -1) x = -1;
+      dv.setInt16(44 + i * 2, Math.round(x * 32767), true);
+    }
+    return URL.createObjectURL(new Blob([ab], { type: 'audio/wav' }));
+  }
+  function getWav(kind) { if (!wavUrl[kind]) wavUrl[kind] = makeWav(kind); return wavUrl[kind]; }
+
+  function setMediaSession(kind) {
+    if (!('mediaSession' in navigator)) return;
+    try {
+      if (typeof MediaMetadata !== 'undefined') {
+        navigator.mediaSession.metadata = new MediaMetadata({ title: '띰미러 시험', artist: '아톰 시험', album: TEST_NAME[kind] || '' });
+      }
+    } catch (e) {}
+    var h = {
+      play: function () { var p = audio.play(); if (p && p.catch) p.catch(function () {}); addLog('미디어 버튼: 재생'); },
+      pause: function () { audio.pause(); addLog('미디어 버튼: 일시정지'); },
+      stop: function () { audio.pause(); addLog('미디어 버튼: 정지'); }
+    };
+    Object.keys(h).forEach(function (a) { try { navigator.mediaSession.setActionHandler(a, h[a]); } catch (e) {} });
+  }
+  function msPlaybackState() {
+    try { if ('mediaSession' in navigator) navigator.mediaSession.playbackState = audio.paused ? 'paused' : 'playing'; } catch (e) {}
+  }
+
+  /* ---------- messages / log / counters ---------- */
+  function showMsg(text, cls) { var m = $('msg'); m.textContent = text; m.className = 'msg' + (cls ? ' ' + cls : ''); }
+  function addLog(ev) {
+    log.push({ t: Date.now(), e: ev });
+    if (log.length > 20) log = log.slice(-20);
+    lsSet('log', JSON.stringify(log));
+    renderLog();
+  }
+  function bump(k) { cur[k]++; cum[k] = (cum[k] || 0) + 1; lsSet('cum', JSON.stringify(cum)); renderCounts(); }
+  function markTest(k) {
+    curTest = k; curTestT = Date.now();
+    lsSet('test', JSON.stringify({ k: k, t: curTestT, load: loads }));
+    ['bA', 'bB', 'bC'].forEach(function (id) { $(id).classList.toggle('on', id === 'b' + k); });
+  }
+
+  /* ---------- tests ---------- */
+  function stopAudioQuiet() { if (!audio.paused) { selfPauseT = Date.now(); audio.pause(); } }
+  function startA() {
+    stopAudioQuiet();
+    markTest('A');
+    addLog('시험 A 시작 (소리 없음)');
+    showMsg('', '');
+    renderAudio(); beat();
+  }
+  // onFail(name) is called if play() is rejected
+  function startAudio(kind, onFail) {
+    markTest(kind);
+    addLog('시험 ' + kind + ' 시작 (' + (kind === 'B' ? '들리는 소리' : '거의 무음') + ')');
+    try {
+      if (curKind !== kind) { stopAudioQuiet(); audio.src = getWav(kind); curKind = kind; }
+      audio.loop = true;
+      audio.volume = 1;
+    } catch (e) {
+      showMsg('소리 만들기 실패: ' + (e && e.message), 'bad');
+      addLog('소리 만들기 실패 ' + (e && e.name));
+      if (onFail) onFail('make');
+      return;
+    }
+    setMediaSession(kind);
+    showMsg('', '');
+    var p;
+    try { p = audio.play(); } catch (e) { p = Promise.reject(e); }
+    if (p && p.then) {
+      p.then(function () { msPlaybackState(); renderAudio(); beat(); }, function (err) {
+        var nm = (err && err.name) || '오류';
+        if (nm === 'NotAllowedError') showMsg('브라우저가 소리를 막았습니다. [' + kind + ' 시작] 을 한 번 더 눌러 주세요.', 'bad');
+        else showMsg('소리 재생 실패(' + nm + '). [' + kind + ' 시작] 을 한 번 더 눌러 주세요.', 'bad');
+        addLog('play() 거부: ' + nm);
+        if (onFail) onFail(nm);
+        renderAudio();
+      });
+    }
+    renderAudio(); beat();
+  }
+  function stopAll(why) {
+    stopAudioQuiet();
+    curTest = null;
+    ['bA', 'bB', 'bC'].forEach(function (id) { $(id).classList.remove('on'); });
+    addLog(why || '멈춤 버튼');
+    msPlaybackState(); renderAudio(); beat();
+  }
+  $('bA').addEventListener('click', startA);
+  $('bB').addEventListener('click', function () { startAudio('B'); });
+  $('bC').addEventListener('click', function () { startAudio('C'); });
+  $('bS').addEventListener('click', function () { stopAll(); showMsg('멈춤 ' + hms(Date.now()), ''); });
+
+  /* ---------- in-page confirm ---------- */
+  var ovlAction = null;
+  function askConfirm(text, yesLabel, fn) {
+    $('ovlText').textContent = text; $('bYes').textContent = yesLabel; ovlAction = fn;
+    $('ovl').classList.add('show');
+  }
+  $('bNo').addEventListener('click', function () { $('ovl').classList.remove('show'); ovlAction = null; });
+  $('bYes').addEventListener('click', function () {
+    $('ovl').classList.remove('show');
+    var f = ovlAction; ovlAction = null; if (f) f();
+  });
+
+  $('gReset').addEventListener('click', function () {
+    askConfirm('처음(1단계)부터 다시 할까요? 단계 결과가 지워집니다.', '처음부터', function () {
+      stopAll('처음부터 다시');
+      G = newGuide(); saveG(); showMsg('', '');
+      renderGuide();
+    });
+  });
+  $('bClear').addEventListener('click', function () {
+    askConfirm('기록을 모두 지울까요? 열린 횟수 · 단계 결과 · 사건 기록이 0이 됩니다.', '지우기', function () {
+      try {
+        var del = [], i;
+        for (i = 0; i < localStorage.length; i++) { var key = localStorage.key(i); if (key && key.indexOf(P) === 0) del.push(key); }
+        del.forEach(function (key) { localStorage.removeItem(key); });
+      } catch (e) {}
+      try {
+        var del2 = [], j;
+        for (j = 0; j < sessionStorage.length; j++) { var k2 = sessionStorage.key(j); if (k2 && k2.indexOf(P) === 0) del2.push(k2); }
+        del2.forEach(function (key) { sessionStorage.removeItem(key); });
+        ssSet('mark', ssMark); ssSet('n', '0');
+      } catch (e) {}
+      stopAll('기록 지움');
+      loads = 0; cum = ZERO(); cur = ZERO(); log = [];
+      prevHb = null; prevEnd = null; prevBu = null; prevTest = null;
+      G = newGuide(); saveG();
+      cleared = true;
+      addLog('기록 지움');
+      renderAll();
+      showMsg('기록을 지웠습니다. 다음에 열리면 1번부터 셉니다.', 'ok');
+    });
+  });
+
+  /* ---------- guide actions ---------- */
+  function gStart() {
+    var k = STEP_TEST[G.step];
+    G.phase = 'running'; G.test = k; G.startLoads = loads; G.startMark = ssMark; G.startT = Date.now();
+    G.hid = 0; G.pauses = 0;
+    saveG();
+    var startT = G.startT;
+    if (k === 'A') startA();
+    else startAudio(k, function () {
+      if (G.phase === 'running' && G.startT === startT) { G.phase = 'ready'; saveG(); renderGuide(); }
+    });
+    addLog('단계 ' + G.step + ' 시작');
+    renderGuide();
+  }
+  function gDone() {
+    G.res[G.step] = {
+      reopen: false, n: 0, test: G.test,
+      playing: G.test === 'A' ? null : !audio.paused,
+      hid: G.hid || 0, pauses: G.pauses || 0, t: Date.now()
+    };
+    G.phase = 'back'; saveG();
+    addLog('단계 ' + G.step + ' 다 했어요 (안 닫힘)');
+    renderGuide();
+  }
+  function gNext() {
+    stopAll('단계 ' + G.step + ' 끝');
+    G.step++; G.phase = 'ready'; delete G.startLoads; saveG();
+    showMsg('', '');
+    renderGuide();
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+  function gSkip() {
+    G.res[4] = { skip: true }; G.step = 5; G.phase = 'ready'; saveG();
+    addLog('단계 4 건너뜀');
+    renderGuide();
+  }
+  function gBt(ans) {
+    if (!G.res[3]) return;
+    G.res[3].bt = ans; saveG();
+    addLog('블루투스 음악 답: ' + (ans === 'yes' ? '예' : '아니요'));
+    renderGuide();
+  }
+
+  /* ---------- guide rendering ---------- */
+  function soundText(r) {
+    if (!r || r.skip) return '-';
+    if (r.test === 'A') return '소리 없음(A)';
+    if (r.reopen) return r.playing ? '닫히기 전 재생 중' : (r.playing === null ? '모름' : '닫히기 전 멈춰 있었음');
+    return r.playing ? '계속 재생 중' : '멈춰 있음' + (r.pauses ? ' (멈춤 ' + r.pauses + '번)' : '');
+  }
+  function resultBox(r) {
+    if (r.reopen) {
+      return '<div class="gres re">브라우저가 다시 열렸습니다 (새로 열림 ' + r.loadNo + '번째)' +
+        '<span class="s">이 단계에서 ' + r.n + '번 새로 열림 · 닫히기 전 pagehide ' + (r.ph ? '있었음' : '없었음') +
+        ' · ' + esc(soundText(r)) + ' · ' + (r.sess === 'new' ? '새 세션' : '같은 세션') +
+        (r.gap != null ? ' · 끊긴 시간 ' + secs(r.gap) + '초' : '') + '</span></div>';
+    }
+    return '<div class="gres st">브라우저가 닫히지 않고 그대로였습니다' +
+      '<span class="s">숨었다 돌아온 횟수 ' + (r.hid || 0) + '번 · 소리: ' + esc(soundText(r)) + '</span></div>';
+  }
+  function btn(id, cls, label) { return '<button class="gb ' + cls + '" id="' + id + '">' + label + '</button>'; }
+
+  function renderGuide() {
+    var s = G.step, h = '';
+    if (s >= 5) {
+      $('gStep').innerHTML = '끝';
+      h += '<div class="gtext">끝 — 이 화면을 사진 찍어 댓글로 보내 주세요</div>';
+      h += '<table class="sum"><tr><th>단계</th><th>새로 열림 여부</th><th>닫히기 전 pagehide</th><th>소리 상태</th><th>블루투스 답</th></tr>';
+      var label = { 1: '1 · A 소리 없이', 2: '2 · B 소리', 3: '3 · B + 블루투스', 4: '4 · C 거의 무음' };
+      for (var i = 1; i <= 4; i++) {
+        var r = G.res[i];
+        var re = !r ? '안 함' : r.skip ? '건너뜀' : r.reopen ? '<span class="bad">새로 열림 (' + r.n + '번)</span>' : '<span class="ok">그대로</span>';
+        var ph = !r || r.skip ? '-' : r.reopen ? (r.ph ? '있었음' : '<span class="bad">없었음</span>') : '-';
+        var bt = i === 3 ? (r && r.bt ? (r.bt === 'yes' ? '예' : '아니요') : '답 없음') : '-';
+        h += '<tr><td>' + label[i] + '</td><td>' + re + '</td><td>' + ph + '</td><td>' + esc(soundText(r)) + '</td><td>' + bt + '</td></tr>';
+      }
+      h += '</table>' + capLines();
+      h += '<div class="gnote">기록 시각 ' + esc(mdhms(Date.now())) + ' · 새로 열린 횟수 모두 ' + loads + '번</div>';
+      $('gBody').innerHTML = h;
+      return;
+    }
+    $('gStep').innerHTML = '지금 할 일 —<span class="num">' + s + '/4</span> 단계' + (s === 4 ? ' <span class="acc">(선택)</span>' : '');
+    var k = STEP_TEST[s];
+    if (G.phase === 'ready') {
+      if (s === 1) h += '<div class="gtext">차를 세우고(P) 아래 [A 시작] 을 누르세요.</div><div class="gnote">A = 소리 없이 시험합니다.</div>';
+      if (s === 2) h += '<div class="gtext">[B 시작] 을 누르세요. 종소리가 납니다.</div>';
+      if (s === 3) h += '<div class="gtext">폰 블루투스로 음악을 먼저 틀어 두세요.<br>그다음 [B 시작] 을 누르세요.</div>';
+      if (s === 4) h += '<div class="gtext">[C 시작] 을 누르세요.</div><div class="gnote">C = 거의 안 들리는 소리입니다. 안 하셔도 됩니다.</div>';
+      h += '<div class="gbtns">' + btn('gStart', k, k + ' 시작') + (s === 4 ? btn('gSkip', 'small', '건너뛰고 끝내기') : '') + '</div>';
+    } else if (G.phase === 'running') {
+      h += '<div class="gtext"><ol><li>순정 내비를 열었다가 돌아오세요</li><li>후진 기어를 넣었다 빼세요</li><li>이 화면으로 돌아와 아래 버튼을 누르세요</li></ol></div>';
+      h += '<div class="gnote">시험 ' + k + ' 시작 ' + esc(hms(G.startT)) + ' · 지금까지 숨었다 돌아온 횟수 <b id="gHid">' + (G.hid || 0) + '</b>번</div>';
+      h += '<div class="gbtns">' + btn('gDone', 'done', '다 했어요') + '</div>';
+    } else { // back
+      var r2 = G.res[s] || { reopen: false };
+      h += resultBox(r2);
+      h += '<div class="photo">→ 이 화면을 사진 찍어 주세요</div>';
+      if (s === 3) {
+        h += '<div class="btq">블루투스 음악이 계속 들렸나요?' + (r2.bt ? ' <span class="warn">답: ' + (r2.bt === 'yes' ? '예' : '아니요') + '</span>' : '') + '</div>';
+        h += '<div class="gbtns">' + btn('gBtY', 'yes' + (r2.bt === 'yes' ? ' picked' : ''), '예') + btn('gBtN', 'no' + (r2.bt === 'no' ? ' picked' : ''), '아니요') + '</div>';
+      }
+      h += '<div class="gbtns">' + btn('gNext', 'go', s === 4 ? '끝내기 →' : '다음 단계 →') + '</div>';
+    }
+    $('gBody').innerHTML = h;
+    var b;
+    if ((b = $('gStart'))) b.addEventListener('click', gStart);
+    if ((b = $('gSkip'))) b.addEventListener('click', gSkip);
+    if ((b = $('gDone'))) b.addEventListener('click', gDone);
+    if ((b = $('gNext'))) b.addEventListener('click', gNext);
+    if ((b = $('gBtY'))) b.addEventListener('click', function () { gBt('yes'); });
+    if ((b = $('gBtN'))) b.addEventListener('click', function () { gBt('no'); });
+  }
+
+  /* ---------- heartbeat ---------- */
+  function beat() {
+    lsSet('hb', JSON.stringify({
+      t: Date.now(), test: curTest, playing: !audio.paused && (curTest === 'B' || curTest === 'C'),
+      vis: document.visibilityState, loadT: T0, loadNo: loads, cnt: cur, ct: Math.round(audio.currentTime || 0)
+    }));
+  }
+  setInterval(beat, 1000);
+  beat();
+
+  /* ---------- lifecycle events ---------- */
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') {
+      bump('hidden'); addLog('화면 숨김 (visibility→hidden)');
+      if (G.phase === 'running') { G.hid = (G.hid || 0) + 1; saveG(); var e = $('gHid'); if (e) e.textContent = G.hid; }
+    } else addLog('화면 다시 보임 (visible)');
+    beat(); renderAudio();
+  });
+  document.addEventListener('freeze', function () { bump('freeze'); addLog('freeze (얼림)'); beat(); });
+  document.addEventListener('resume', function () { bump('resume'); addLog('resume (풀림)'); beat(); });
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) { lsDel('end'); bump('pspersist'); addLog('pageshow (persisted · 저장본 복원)'); }
+    else addLog('pageshow');
+  });
+  window.addEventListener('pagehide', function (e) {
+    lsSet('end', JSON.stringify({ t: Date.now(), persisted: !!e.persisted }));
+    cur.pagehide++; cum.pagehide = (cum.pagehide || 0) + 1; lsSet('cum', JSON.stringify(cum));
+    addLog('pagehide' + (e.persisted ? ' (persisted)' : ''));
+    beat();
+  });
+  window.addEventListener('beforeunload', function () {
+    lsSet('bu', JSON.stringify({ t: Date.now() }));
+    addLog('beforeunload');
+  });
+  window.addEventListener('focus', function () { addLog('창 focus'); });
+  window.addEventListener('blur', function () { addLog('창 blur'); });
+  var rzT = 0;
+  window.addEventListener('resize', function () {
+    clearTimeout(rzT);
+    rzT = setTimeout(function () { addLog('크기 바뀜 ' + window.innerWidth + '×' + window.innerHeight); }, 600);
+  });
+  ['play', 'pause', 'ended', 'error', 'stalled'].forEach(function (ev) {
+    audio.addEventListener(ev, function () {
+      if (ev === 'pause' && Date.now() - selfPauseT < 500) return; // our own stop, logged elsewhere
+      if (ev === 'pause' && G.phase === 'running') { G.pauses = (G.pauses || 0) + 1; saveG(); }
+      var extra = ev === 'error' && audio.error ? ' code ' + audio.error.code : '';
+      addLog('소리 ' + ev + extra + ' (' + (audio.currentTime || 0).toFixed(1) + '초)');
+      msPlaybackState(); renderAudio();
+    });
+  });
+
+  /* ---------- rendering: status strip + details ---------- */
+  function renderTop() {
+    $('kLoads').textContent = loads + '번';
+    $('kLoadsSub').innerHTML = cleared ? '기록 지움' :
+      '이번 시작 ' + esc(hms(T0)) + ' · ' +
+      (sameSession ? '<span class="ok">같은 세션</span>' : '<span class="warn">새 세션</span>') + ' · ' + esc(navType);
+    if (cleared || !prevHb) {
+      $('kGap').textContent = cleared ? '기록 지움' : '처음 열림';
+      $('kGapSub').textContent = cleared ? '' : '지난 기록 없음';
+      return;
+    }
+    var ph = prevEnd ? '<span class="pill ok">pagehide 있었음</span>' : '<span class="pill bad">pagehide 없었음</span>';
+    $('kGap').innerHTML = secs(T0 - prevHb.t) + '초 · ' + ph;
+    var st = prevHb.test
+      ? (prevHb.test === 'A' ? '시험 A(소리 없음)' : '시험 ' + prevHb.test + (prevHb.playing ? ' <span class="ok">소리 나는 중</span>' : ' <span class="bad">소리 멈춤</span>'))
+      : '시험 안 하던 중';
+    var vis = prevHb.vis === 'hidden' ? '<span class="warn">화면 숨김</span>' : '화면 보임';
+    $('kGapSub').innerHTML = '지난번 마지막 ' + esc(hms(prevHb.t)) + ' · ' + st + ' · ' + vis;
+  }
+
+  function renderLoadTable() {
+    var list = [];
+    if (prevHb && !cleared) {
+      list.push(['지난번에 마지막으로 살아 있던 시각', esc(mdhms(prevHb.t)) + ' (이번 시작 ' + secs(T0 - prevHb.t) + '초 전)']);
+      if (prevHb.loadT) list.push(['지난번 페이지가 살아 있던 시간', secs(prevHb.t - prevHb.loadT) + '초 (' + esc(hms(prevHb.loadT)) + ' 시작)']);
+      list.push(['지난번 마지막 순간 상태', esc(prevHb.test ? ('시험 ' + prevHb.test) : '시험 없음') + ' · 소리 ' + (prevHb.playing ? '<span class="ok">재생 중</span>' : '없음') +
+        ' · ' + esc(prevHb.vis || '?') + (prevHb.playing ? ' · 재생 위치 ' + prevHb.ct + '초' : '')]);
+      list.push(['지난번 pagehide', prevEnd ? '<span class="ok">있었음</span> ' + esc(hms(prevEnd.t)) + (prevEnd.persisted ? ' (persisted)' : '') : '<span class="bad">없었음</span>']);
+      list.push(['지난번 beforeunload', prevBu ? '<span class="ok">있었음</span> ' + esc(hms(prevBu.t)) : '<span class="bad">없었음</span>']);
+      if (prevHb.cnt) list.push(['지난번 숨김/freeze/resume', prevHb.cnt.hidden + ' / ' + prevHb.cnt.freeze + ' / ' + prevHb.cnt.resume]);
+    } else if (!cleared) {
+      list.push(['지난 기록', '없음 (처음 열림)']);
+    }
+    if (prevTest && !cleared) list.push(['마지막으로 누른 시험', esc(TEST_NAME[prevTest.k] || prevTest.k) + ' · ' + esc(mdhms(prevTest.t))]);
+    list.push(['navigation type', '<span class="acc">' + esc(navType) + '</span>']);
+    list.push(['document.wasDiscarded', esc(wasDiscarded)]);
+    list.push(['document.referrer', esc(referrer)]);
+    list.push(['세션(sessionStorage)', sameSession ? '<span class="ok">같은 세션</span> · 이 세션 ' + ssLoads + '번째 열림' : '<span class="warn">새 세션</span> (브라우저가 새로 시작됐거나 새 탭)']);
+    list.push(['이번 시작 시각', esc(mdhms(T0))]);
+    if (!lsOK) list.push(['저장소', '<span class="bad">localStorage 안 됨 — 기록이 남지 않습니다</span>']);
+    $('tLoad').innerHTML = rows(list);
+  }
+
+  function renderAudio() {
+    var playing = !audio.paused;
+    var k = $('kSound'), ks = $('kSoundSub');
+    if (curTest === 'A') { k.textContent = 'A · 소리 없음'; k.className = 'big acc'; }
+    else if (curTest && playing) { k.textContent = curTest + ' 재생 중'; k.className = 'big ok'; }
+    else if (curTest) { k.textContent = curTest + ' 멈춤'; k.className = 'big bad'; }
+    else { k.textContent = '멈춤'; k.className = 'big'; }
+    ks.innerHTML = 'paused ' + audio.paused + ' · ' + (audio.currentTime || 0).toFixed(1) + '초 · readyState ' + audio.readyState;
+    $('tAudio').innerHTML = rows([
+      ['지금 시험', curTest ? esc(TEST_NAME[curTest]) + ' (' + hms(curTestT) + ')' : '없음'],
+      ['audio.paused', audio.paused ? '<span class="bad">true</span>' : '<span class="ok">false</span>'],
+      ['currentTime', (audio.currentTime || 0).toFixed(1) + '초' + (isFinite(audio.duration) ? ' / ' + audio.duration.toFixed(1) + '초' : '')],
+      ['readyState', String(audio.readyState)],
+      ['visibilityState', esc(document.visibilityState)],
+      ['이번 페이지 살아 있는 시간', secs(Date.now() - T0) + '초']
+    ]);
+  }
+
+  function renderCounts() {
+    var names = [['hidden', 'visibility→hidden'], ['freeze', 'freeze'], ['resume', 'resume'], ['pspersist', 'pageshow(persisted)'], ['pagehide', 'pagehide']];
+    var h = '<tr><th></th><th class="n">이번</th><th class="n">누적</th></tr>';
+    names.forEach(function (n) { h += '<tr><td class="k">' + n[1] + '</td><td class="n v">' + (cur[n[0]] || 0) + '</td><td class="n v">' + (cum[n[0]] || 0) + '</td></tr>'; });
+    $('tCount').innerHTML = h;
+  }
+
+  function renderLog() {
+    var h = '';
+    for (var i = log.length - 1; i >= 0; i--) h += '<div><span class="t">' + esc(mdhms(log[i].t)) + '</span>' + esc(log[i].e) + '</div>';
+    $('log').innerHTML = h || '<div>(없음)</div>';
+  }
+
+  // compact capability block for the final summary card (one photo has everything)
+  function capLines() {
+    var MS = window.MediaSource;
+    function ox(t) { try { return MS && MS.isTypeSupported && MS.isTypeSupported(t) ? '○' : '×'; } catch (e) { return '?'; } }
+    function cp(t) { try { return audio.canPlayType(t) || '없음'; } catch (e) { return '?'; } }
+    var wk; try { wk = MS && MS.canConstructInDedicatedWorker ? '○' : '×'; } catch (e) { wk = '?'; }
+    var m = /Chrome\/(\d+)/.exec(navigator.userAgent);
+    var l1 = '소리 형식: MSE ' + (MS ? '있음' : '없음') +
+      ' · AAC ' + ox('audio/aac') + ' · MP3 ' + ox('audio/mpeg') +
+      ' · AAC(mp4) ' + ox('audio/mp4; codecs="mp4a.40.2"') + ' · Opus(webm) ' + ox('audio/webm; codecs="opus"') +
+      ' · 워커 MSE ' + wk +
+      ' · &lt;audio&gt; AAC/MP3/HLS: ' + esc(cp('audio/aac')) + '/' + esc(cp('audio/mpeg')) + '/' + esc(cp('application/vnd.apple.mpegurl'));
+    var l2 = '차: 메모리 ' + (navigator.deviceMemory != null ? esc(navigator.deviceMemory) + ' GB' : '모름') +
+      ' · 코어 ' + (navigator.hardwareConcurrency != null ? esc(navigator.hardwareConcurrency) : '모름') +
+      ' · 화면 ' + screen.width + 'x' + screen.height + ' · DPR ' + esc(window.devicePixelRatio) +
+      ' · Chrome ' + (m ? m[1] : '모름');
+    return '<div class="caps">' + l1 + '<br>' + l2 + '</div>';
+  }
+
+  function renderCaps() {
+    var list = [], MS = window.MediaSource;
+    function yn(v) { return v ? '<span class="ok">예</span>' : '<span class="bad">아니오</span>'; }
+    list.push(['MediaSource 있음', yn(!!MS)]);
+    ['audio/aac', 'audio/mpeg', 'audio/mp4; codecs="mp4a.40.2"', 'audio/webm; codecs="opus"'].forEach(function (t) {
+      var v; try { v = MS && MS.isTypeSupported ? yn(MS.isTypeSupported(t)) : '-'; } catch (e) { v = '오류'; }
+      list.push(['MSE ' + t, v]);
+    });
+    var cdw; try { cdw = MS ? (typeof MS.canConstructInDedicatedWorker === 'undefined' ? '(없음)' : yn(MS.canConstructInDedicatedWorker)) : '-'; } catch (e) { cdw = '오류'; }
+    list.push(['MSE canConstructInDedicatedWorker', cdw]);
+    ['audio/aac', 'audio/mpeg', 'application/vnd.apple.mpegurl'].forEach(function (t) {
+      var v; try { v = audio.canPlayType(t); } catch (e) { v = '오류'; }
+      list.push(['canPlayType ' + t, v ? '<span class="ok">' + esc(v) + '</span>' : '<span class="bad">아니오 (빈 값)</span>']);
+    });
+    list.push(['deviceMemory', navigator.deviceMemory != null ? esc(navigator.deviceMemory) + ' GB' : '(없음)']);
+    list.push(['hardwareConcurrency', esc(navigator.hardwareConcurrency != null ? navigator.hardwareConcurrency : '(없음)')]);
+    var ua = navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').replace(/AppleWebKit\/[\d.]+ \(KHTML, like Gecko\) ?/, '');
+    list.push(['userAgent', '<span style="font-weight:500">' + esc(ua) + '</span>']);
+    list.push(['화면 screen', screen.width + '×' + screen.height + ' · 창 ' + window.innerWidth + '×' + window.innerHeight]);
+    list.push(['devicePixelRatio', esc(window.devicePixelRatio)]);
+    list.push(['mediaSession', 'mediaSession' in navigator ? '<span class="ok">있음</span>' : '<span class="bad">없음</span>']);
+    $('tCap').innerHTML = rows(list);
+  }
+
+  function renderClock() { $('clock').textContent = hms(Date.now()); }
+  function renderAll() { renderGuide(); renderTop(); renderLoadTable(); renderAudio(); renderCounts(); renderLog(); renderClock(); }
+
+  addLog('새로 열림 #' + loads + ' (' + navType + (sameSession ? ', 같은 세션' : ', 새 세션') + ')');
+  renderAll();
+  renderCaps();
+  setInterval(function () { renderClock(); renderAudio(); }, 500);
+})();
+</script>
+</body>
+</html>
