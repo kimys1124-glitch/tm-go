@@ -72,7 +72,13 @@ button.alt{border-color:var(--line);background:transparent;color:var(--mute);fon
   function probeHost(n) { return host(n); }
   /* ★ B1133) 접속 코드(?k=)를 켠 폰 — 즐겨찾기 주소에 붙은 코드를 그대로 넘긴다 */
   var K = ((location.search || "").match(/[?&]k=([^&#]+)/) || [])[1] || "";
+  /* ★ B1480) 못 찾아도 멈추지 않는다 — 도움 화면은 두고 3.5초마다 조용히 다시 찾는다(3분 · 마지막 번호와 2·4·8 먼저 · 세 번에 한 번은 32개 전부)
+       · 망이 바뀌거나(online) 화면이 다시 보이면 곧바로 · 3분을 다시 센다. 옛 판은 8초 안에 못 찾으면 [다시 찾기] 를 눌러야만 다시 찾아,
+       차가 핫스팟에 늦게 붙으면(시작 뒤 수십 초) 그대로 멈춰 있었다(198 41번 · 진단 205) */
+  var QUIET_MS = 180000, QUIET_EVERY = 3500, QUIET_WAIT = 3000;
+  var quietUntil = 0, quietBusy = false, quietRound = 0, quietTimer = 0, done = false;
   function go(n, why) {
+    done = true; clearTimeout(quietTimer);
     try { localStorage.setItem("tmLast", String(n)); } catch (e) {}
     document.getElementById("st").textContent = "찾았습니다 — 연결합니다";
     location.replace("https://" + host(n) + ":" + PORT + "/" + (K ? "?k=" + K : ""));
@@ -100,24 +106,55 @@ button.alt{border-color:var(--line);background:transparent;color:var(--mute);fon
     document.getElementById("found").style.display = "block";
     document.getElementById("connect").onclick = function () { go(n, "first"); };
   }
+  function lastNum() { var l = -1; try { l = parseInt(localStorage.getItem("tmLast"), 10); } catch (e) {} return (l >= 0 && l < N) ? l : -1; }
+  function allList(last) { var list = []; for (var n = 0; n < N; n++) list.push(n); if (last >= 0) { list.splice(list.indexOf(last), 1); list.unshift(last); } return list; }
+  /* 한 바퀴 — 목록을 한꺼번에 두드리고 wait 안에 하나라도 대답하면 그 번호 */
+  function round(list, wait) {
+    var ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, wait);
+    return any(list.map(function (n) { return probe(n, ctl); })).then(function (n) { clearTimeout(timer); ctl.abort(); return n; },
+      function (e) { clearTimeout(timer); throw e; });
+  }
+  function finish(n, first) { if (done) return; clearTimeout(quietTimer); if (first) { done = true; found(n); } else go(n, "probe"); }
   function find() {
+    clearTimeout(quietTimer);
     document.getElementById("help").style.display = "none";
     document.getElementById("bar").style.display = "block";
     document.getElementById("st").textContent = "폰 찾는 중…";
-    var ctl = new AbortController(), timer = setTimeout(function () { ctl.abort(); }, WAIT);
-    var last = -1; try { last = parseInt(localStorage.getItem("tmLast"), 10); } catch (e) {}
-    var list = []; for (var n = 0; n < N; n++) list.push(n);
-    if (last >= 0 && last < N) { list.splice(list.indexOf(last), 1); list.unshift(last); }
-    var first = !(last >= 0);   // ★ B1133) 이 차에서 처음 — 즐겨찾기부터
-    any(list.map(function (n) { return probe(n, ctl); })).then(function (n) {
-      clearTimeout(timer); ctl.abort(); if (first) found(n); else go(n, "probe");
-    }, function () {
-      clearTimeout(timer);
+    var last = lastNum();
+    var first = last < 0;   // ★ B1133) 이 차에서 처음 — 즐겨찾기부터
+    round(allList(last), WAIT).then(function (n) { finish(n, first); }, function () {
       document.getElementById("bar").style.display = "none";
       document.getElementById("st").textContent = "";
       document.getElementById("help").style.display = "block";
+      quietUntil = Date.now() + QUIET_MS; quietRound = 0; quietStartAt = Date.now(); quietLater();   // ★ B1480)
     });
   }
+  var quietStartAt = 0;
+  function quietLater() {
+    clearTimeout(quietTimer);
+    if (done) return;
+    if (Date.now() > quietUntil) { document.getElementById("st").textContent = ""; return; }
+    /* 바퀴 시작부터 3.5초 — 폰이 없으면 두드림이 3초 시간 초과로 끝나 바퀴 사이가 벌어지지 않게 */
+    quietTimer = setTimeout(quiet, Math.max(500, QUIET_EVERY - (Date.now() - quietStartAt)));
+  }
+  function quiet() {
+    if (done || quietBusy) return;
+    if (Date.now() > quietUntil) { document.getElementById("st").textContent = ""; return; }
+    quietBusy = true; quietRound++; quietStartAt = Date.now();
+    document.getElementById("st").textContent = "자동으로 다시 찾는 중… 폰이 준비되면 저절로 연결합니다";
+    var last = lastNum(), first = last < 0;
+    var pri = []; [last, 2, 4, 8].forEach(function (n) { if (n >= 0 && pri.indexOf(n) < 0) pri.push(n); });
+    round(quietRound % 3 === 0 ? allList(last) : pri, QUIET_WAIT).then(function (n) { quietBusy = false; finish(n, first); },
+      function () { quietBusy = false; quietLater(); });
+  }
+  /* 망이 바뀌었거나 화면이 다시 보인다 — 도움 화면이 떠 있으면 곧바로 찾고 3분을 다시 센다 */
+  function wake() {
+    if (done || document.getElementById("help").style.display !== "block") return;
+    quietUntil = Date.now() + QUIET_MS;
+    if (!quietBusy) { clearTimeout(quietTimer); quiet(); }
+  }
+  window.addEventListener("online", wake);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) wake(); });
   var grid = document.getElementById("grid");
   for (var i = 0; i < N; i++) { (function (n) { var b = document.createElement("button"); b.textContent = n; b.onclick = function () { go(n, "pick"); }; grid.appendChild(b); })(i); }
   document.getElementById("again").onclick = find;
